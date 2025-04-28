@@ -18,8 +18,6 @@ import math
 import functools
 from typing import Optional, Tuple, List, Union
 
-from torch import device
-
 from ._utils import *
 from ._utils import patch_unsloth_smart_gradient_checkpointing
 from ._utils import __version__
@@ -605,7 +603,7 @@ def LlamaModel_fast_forward(
 
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-    dev: device | None = None
+    dev: torch.device | None = None
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
         raise ValueError("Unsloth: You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
