@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__version__ = "2025.4.1.oi.1"
+__version__ = "2025.4.1.001"
 
 __all__ = [
     "SUPPORTS_BFLOAT16",

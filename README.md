@@ -438,3 +438,11 @@ You can cite the Unsloth repo as follows:
 - [HuyNguyen-hust](https://github.com/HuyNguyen-hust) for making [RoPE Embeddings 28% faster](https://github.com/unslothai/unsloth/pull/238)
 - [RandomInternetPreson](https://github.com/RandomInternetPreson) for confirming WSL support
 - [152334H](https://github.com/152334H) for experimental DPO support
+
+Fork specifics
+============================
+modification of pyproject.toml:
+license = {text = "Apache-2.0"}
+
+
+python -m build --wheel --no-isolation --outdir unsloth_oi_fork unsloth
