@@ -17,6 +17,9 @@ import gc
 import math
 import functools
 from typing import Optional, Tuple, List, Union
+
+from torch import device
+
 from ._utils import *
 from ._utils import patch_unsloth_smart_gradient_checkpointing
 from ._utils import __version__
@@ -602,13 +605,16 @@ def LlamaModel_fast_forward(
 
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
+    dev: device | None = None
     # retrieve input_ids and inputs_embeds
     if input_ids is not None and inputs_embeds is not None:
         raise ValueError("Unsloth: You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
     elif input_ids is not None:
         batch_size, seq_length = input_ids.shape
+        dev = input_ids.device
     elif inputs_embeds is not None:
         batch_size, seq_length, _ = inputs_embeds.shape
+        dev = inputs_embeds.device
     else:
         raise ValueError("Unsloth: You have to specify either decoder_input_ids or decoder_inputs_embeds")
 
@@ -640,7 +646,7 @@ def LlamaModel_fast_forward(
         position_ids = torch.arange(
             past_key_values_length, seq_length + past_key_values_length,
             dtype  = torch.int32,
-            device = "cuda:0",
+            device = dev,
         )
         position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
     elif position_ids is not None:
@@ -928,11 +934,11 @@ def LlamaModel_fast_forward_inference(
     bsz, q_len, hd = X.shape
     assert(q_len == 1)
     # Get saved buffers to reduce memory movement
-    residual = torch.empty((bsz, q_len, hd), dtype = torch.float32, device = "cuda:0")
-    _XX = torch.empty((2, bsz, q_len, hd), dtype = torch.float32, device = "cuda:0")
+    residual = torch.empty((bsz, q_len, hd), dtype = torch.float32, device = input_ids.device)
+    _XX = torch.empty((2, bsz, q_len, hd), dtype = torch.float32, device = input_ids.device)
     XX, XX2 = _XX[0], _XX[1]
-    variance = torch.empty((bsz, q_len, 1), dtype = torch.float32, device = "cuda:0")
-    temp_mlp = torch.empty((2, bsz, 1, mlp_size), dtype = X.dtype, device = "cuda:0")
+    variance = torch.empty((bsz, q_len, 1), dtype = torch.float32, device = input_ids.device)
+    temp_mlp = torch.empty((2, bsz, 1, mlp_size), dtype = X.dtype, device = input_ids.device)
     temp_gate, temp_up = temp_mlp[0], temp_mlp[1]
 
     seq_len = past_key_values[0][0].shape[-2]
